@@ -44,6 +44,6 @@
 для компиляции исполняющего файла для других систем (MACOS, linux)
 скачайте исходный код с репозитория:
 
-запустите две команды из директории файла scgmaker-script.py
-pip install pyinstaller
-pyinstaller --onefile your_script.py
+# запустите две команды из директории файла scgmaker-script.py
+    pip install pyinstaller
+    pyinstaller --onefile your_script.py
