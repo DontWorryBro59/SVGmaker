@@ -1,13 +1,15 @@
 import os
 import time
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 # Декоратор для красивого вывода функции
 def make_look_cute(func):
     def wrapper(*args, **kwargs):
-        print('*' * 100)
+        logging.info('*' * 100)
         result = func(*args, **kwargs)
-        print('*' * 100)
+        logging.info('*' * 100)
         return result
 
     return wrapper
@@ -18,12 +20,12 @@ def read_cfg():
     max_len_org = 35
     max_len_fio = 20
     directory_to_save = 'svg_files/'
-    print('Читаем файл config.cfg')
+    logging.info('Читаем файл config.cfg')
     try:
         with open('config.cfg', 'r') as file:
             data_cfg = file.read().split('\n')
     except FileNotFoundError:
-        print('Файл config.cfg не найден')
+        logging.error('Файл config.cfg не найден')
         return max_len_org, max_len_fio, directory_to_save
 
     try:
@@ -33,9 +35,9 @@ def read_cfg():
         if directory_to_save[-1] != '/':
             directory_to_save += '/'
     except ValueError:
-        print('Неверный формат данных в файле config.cfg')
+        logging.error('Неверный формат данных в файле config.cfg')
         return max_len_org, max_len_fio, directory_to_save
-    print('Файл прочитан конфигурация взята из файла config.cfg')
+    logging.info('Файл прочитан конфигурация взята из файла config.cfg')
     return max_len_org, max_len_fio, directory_to_save
 
 
@@ -53,7 +55,7 @@ def read_input_data() -> list:
     """
     Reads input data from a file named 'input_data.txt'.
     """
-    print('Читаем файл input_data.txt')
+    logging.info('Читаем файл input_data.txt')
     lines = []
     with open('input_data.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -66,7 +68,7 @@ def read_input_data() -> list:
                 print(f'Неверный формат данных в строке {line}')
                 continue
             lines.append(line)
-    print('Файл прочитан')
+    logging.info('Файл прочитан')
     return lines
 
 
@@ -90,7 +92,7 @@ def split_string(s, max_length) -> list:
 
 @make_look_cute
 def create_svg_data(list_of_data: list) -> list[dict]:
-    print(f'Создаем данные для SVG-файлов')
+    logging.info('Создаем данные для SVG-файлов')
     data_list = []
     for line in list_of_data:
         # Создаем переменные для хранения данных сотрудника и имя для SVG-файла
@@ -99,16 +101,16 @@ def create_svg_data(list_of_data: list) -> list[dict]:
         # Проверяем, что фамилия, имя и отчество не слишком длинные
         for el in line[1].split():
             if len(el) > MAX_LEN_FIO:
-                print(f'Слишком длинное имя для {file_name[:-4]}')
+                logging.error(f'Слишком длинное имя для {file_name[:-4]}')
                 continue
         file_name = f'{family}_{name}_{patronymic}.svg'
         post = line[2]
         data_to_svg = []
-        print(f'Обрабатываем данные для {file_name[:-4]}')
+        logging.info(f'Обрабатываем данные для {file_name[:-4]}')
         # Разбиваем название организации на 1-3 строки, если оно слишком длинное
         organization = split_string(organization, MAX_LEN_ORG)
         if len(organization) > 3:
-            print(f'Слишком длинная организация для {file_name[:-4]}')
+            logging.error(f'Слишком длинная организация для {file_name[:-4]}')
             continue
         # Добавляем данные организации в список data_to_svg
         if len(organization) == 1:
@@ -132,7 +134,7 @@ def create_svg_data(list_of_data: list) -> list[dict]:
         # Разбиваем должность на 1-2 строки, если она слишком длинная
         post = split_string(post, MAX_LEN_FIO)
         if len(post) > 2:
-            print(f'Слишком длинная должность для {file_name[:-4]}')
+            logging.error(f'Слишком длинная должность для {file_name[:-4]}')
             continue
         # Добавляем данные должности в список data_to_svg
         if len(post) == 1:
@@ -143,7 +145,7 @@ def create_svg_data(list_of_data: list) -> list[dict]:
 
         # Записываем данные в словарь data_list для дальнейшей обработки
         data_list.append({'file_name': file_name, 'data_to_svg': data_to_svg})
-    print('Данные для SVG-файлов созданы')
+    logging.info('Данные для SVG-файлов созданы')
     return data_list
 
 
@@ -152,8 +154,8 @@ def create_svg(data_list: list[dict]) -> None:
     """
     Creates SVG files for each employee in the data_list.
     """
-    print(f'Создаем SVG-файлы для каждого сотрудника из списка')
-    print(f'Создаем директорию для сохранения файлов, если она не существует')
+    logging.info('Создаем SVG-файлы для каждого сотрудника из списка')
+    logging.info('Создаем директорию для сохранения файлов, если она не существует')
     if not os.path.exists(directory_to_save):
         os.mkdir(directory_to_save)
 
@@ -163,7 +165,7 @@ def create_svg(data_list: list[dict]) -> None:
         new_svg = default_svg.replace('information_to_add', data_to_replace)
         with open(f'{directory_to_save}{data["file_name"]}', 'w', encoding='utf-8') as file:
             file.write(new_svg)
-    print(f'Все файлы успешно созданы!')
+    logging.info('SVG-файлы созданы')
 
 
 if __name__ == '__main__':
@@ -175,6 +177,7 @@ if __name__ == '__main__':
     data_list = create_svg_data(list_with_input)
     # Создаем SVG-файлы для каждого сотрудника из списка
     create_svg(data_list)
-    print('Приложение завершило работу')
-    print('TIMESLEEP = 100 seconds')
+    logging.info('Приложение завершило работу')
+    logging.info('TIMESLEEP = 100 seconds')
+    logging.info('*'*100)
     time.sleep(100)
